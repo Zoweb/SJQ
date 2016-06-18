@@ -32,12 +32,12 @@ function sjq(selector, context) {
  * The main constructor
  * @param selector e.g. ".class" or "#id" or ".class > #id" (CSS-like selector)
  * @param [context] Currently not used.
- * @returns {SJQ}
+ * @returns {SJQ|Boolean}
  * @constructor
  */
 function SJQ(selector, context) {
     // If this isn't used with `new`, return that
-    if (this.__proto__.constructor !== SJQ) {
+    if (this.constructor !== SJQ) {
         return new SJQ(selector, context);
     }
 
@@ -48,6 +48,10 @@ function SJQ(selector, context) {
     if (typeof selector == "string") {
         element = document.querySelectorAll(selector);
     }
+    if (selector === window) {
+        element = window;
+        selector = "window";
+    }
     if (typeof selector == "object" && !isNode(selector)) {
         element = selector.objects;
         selector = selector.selector;
@@ -56,9 +60,9 @@ function SJQ(selector, context) {
         element = selector;
         selector = "HTMLElement";
     }
-    if (typeof selector == "undefined") {
+    if (selector === undefined) {
         console.error('SJQ requires parameter SELECTOR');
-        return SJQ;
+        return false;
     }
 
     this.selector = selector;
@@ -66,13 +70,23 @@ function SJQ(selector, context) {
     this.objects = [];
     for (var i = 0; i < element.length; i++) {
         this.objects[i] = element[i];
+        // Set 'data' object
+        this.objects[i].data = {
+            // Set 'events' object
+            events: {}
+        };
     }
-    if (this.objects.length == 0) {
+    if (this.objects.length === 0) {
         this.objects[0] = element;
+        this.objects[0].data = {
+            // Set 'events' object
+            events: {}
+        };
     }
 }
 
-SJQ["fn"] = SJQ.prototype;
-sjq["fn"] = SJQ["fn"];
-window["$"] = window["sjq"] = sjq;
-window["SJQ"] = SJQ;
+SJQ.fn = SJQ.prototype;
+sjq.fn = SJQ.fn;
+var $ = sjq;
+window.$ = window.sjq = $;
+window.SJQ = SJQ;

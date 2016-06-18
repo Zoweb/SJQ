@@ -8,6 +8,10 @@ The main function runs similarly to jQuery's, in the way that it uses `document.
 
 The code is hosted at http://code.zoweb.me/sjq/sjq-1.1.0.js.
 
+
+
+I've made a few things for you to use, but the rest *is up to you!* See (the wiki)[http://zoweb.github.io/sjq#wiki_fn]
+
 ### Licence
 The MIT License (MIT)
 

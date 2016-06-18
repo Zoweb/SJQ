@@ -34,13 +34,17 @@ function sjq(selector, context) {
   return new SJQ(selector, context);
 }
 function SJQ(selector, context) {
-  if (this.__proto__.constructor !== SJQ) {
+  if (this.constructor !== SJQ) {
     return new SJQ(selector, context);
   }
   this.SJQ_INFO = SJQ.info;
   var element;
   if (typeof selector == "string") {
     element = document.querySelectorAll(selector);
+  }
+  if (selector === window) {
+    element = window;
+    selector = "window";
   }
   if (typeof selector == "object" && !isNode(selector)) {
     element = selector.objects;
@@ -50,24 +54,27 @@ function SJQ(selector, context) {
     element = selector;
     selector = "HTMLElement";
   }
-  if (typeof selector == "undefined") {
+  if (selector === undefined) {
     console.error("SJQ requires parameter SELECTOR");
-    return SJQ;
+    return false;
   }
   this.selector = selector;
   this.context = context;
   this.objects = [];
   for (var i = 0;i < element.length;i++) {
     this.objects[i] = element[i];
+    this.objects[i].data = {events:{}};
   }
-  if (this.objects.length == 0) {
+  if (this.objects.length === 0) {
     this.objects[0] = element;
+    this.objects[0].data = {events:{}};
   }
 }
-SJQ["fn"] = SJQ.prototype;
-sjq["fn"] = SJQ["fn"];
-window["$"] = window["sjq"] = sjq;
-window["SJQ"] = SJQ;
+SJQ.fn = SJQ.prototype;
+sjq.fn = SJQ.fn;
+var $ = sjq;
+window.$ = window.sjq = $;
+window.SJQ = SJQ;
 $.fn.attr = function(attrName, attrValue) {
   if (!attrValue) {
     return this.objects[0].getAttribute(attrName);
@@ -106,7 +113,6 @@ $.fn.each = function(fn) {
 $.fn.get = function(index) {
   return typeof index == "number" ? this.objects[index] : this.objects;
 };
-var $, undefined, Node, HTMLElement, document, console, window;
 $.fn.html = function(html) {
   if (!html) {
     return this.objects[0].innerHTML;
@@ -116,21 +122,54 @@ $.fn.html = function(html) {
     });
   }
 };
+$.fn.on = function(event, listener) {
+  this.each(function() {
+    var obj = this.get(0);
+    var eventObj = obj["data"]["events"][event];
+    if (!eventObj || eventObj.length == 0) {
+      eventObj = [function() {
+      }];
+    }
+    console.log(eventObj, obj["data"]["events"]);
+    eventObj[eventObj.length] = listener;
+    console.log(eventObj);
+    obj.addEventListener(event, listener, false);
+  });
+};
+$.fn.off = function(event) {
+  this.each(function() {
+    var obj = this.get(0);
+    var eventObj = obj["data"]["events"][event];
+    eventObj = undefined;
+    for (var i = 0;i < eventObj.length;i++) {
+      obj.removeEventListener(event, eventObj[i]);
+    }
+  });
+};
+$.fn.trigger = function(event, eventArgs) {
+  this.each(function() {
+    var obj = this.get(0);
+    var eventObj = obj["data"]["events"][event];
+    for (var i = 0;i < eventObj.length;i++) {
+      eventObj[i](eventArgs);
+    }
+  });
+};
 $.fn.scrollTop = function(pos) {
-  if (pos == undefined) {
-    return this.get(0)["scrollTop"];
+  if (pos === undefined) {
+    return this.get(0).scrollTop;
   } else {
     this.each(function() {
-      this.get(0)["scrollTop"] = pos;
+      this.get(0).scrollTop = pos;
     });
   }
 };
 $.fn.scrollLeft = function(pos) {
-  if (pos == undefined) {
-    return this.get(0)["scrollLeft"];
+  if (pos === undefined) {
+    return this.get(0).scrollLeft;
   } else {
     this.each(function() {
-      this.get(0)["scrollLeft"] = pos;
+      this.get(0).scrollLeft = pos;
     });
   }
 };
