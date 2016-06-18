@@ -1,9 +1,4 @@
 /**
- * kjscompiler annotation
- * @depends {sjq.js}
- */
-
-/**
  *
  * @param name
  * @param attr
@@ -25,5 +20,7 @@ $.fn.css = function(name, attr) {
         } else {
             return window.getComputedStyle(this.objects[0])[style];
         }
-    }
+    } else {
+		return this;
+	}
 };
